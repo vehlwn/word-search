@@ -1,3 +1,4 @@
+import itertools
 import random
 import typing
 
@@ -16,27 +17,31 @@ class Solver:
     def __init__(self, board: Board) -> None:
         self.__board = board
         self.__path: Path = []
+        self.__word = ""
 
     def solve(self, word: str) -> Path:
-        self.__path = []
-        for start_row in gen_shuffled_iota(self.__board_height()):
-            for start_col in gen_shuffled_iota(self.__board_width()):
-                start_cell = (start_row, start_col)
-                if self.__solve_impl(word, start_cell):
-                    break
+        self.__word = word
+        for (start_row, start_col) in itertools.product(
+            gen_shuffled_iota(self.__board_height()),
+            gen_shuffled_iota(self.__board_width()),
+        ):
+            start_cell = (start_row, start_col)
+            self.__path = []
+            if self.__solve_impl([start_cell]):
+                break
         return self.__path
 
-    def __solve_impl(self, word: str, start_cell: Cell) -> bool:
-        if len(self.__path) > len(word):
+    def __solve_impl(self, candidates: Path) -> bool:
+        if len(self.__path) > len(self.__word):
             return False
         word_from_path = self.__get_word_from_path()
         print(f"{word_from_path=}")
-        if word_from_path == word:
+        if word_from_path == self.__word:
             return True
-        candidates = self.__gen_candidates(start_cell)
         for cell in candidates:
             self.__path.append(cell)
-            if self.__solve_impl(word, cell):
+            adj = self.__gen_candidates(cell)
+            if self.__solve_impl(adj):
                 return True
             else:
                 self.__path.pop()
@@ -69,6 +74,7 @@ class Solver:
                 and (row, col) not in self.__path
             ):
                 ret.append((row, col))
+        random.shuffle(ret)
         return ret
 
 
