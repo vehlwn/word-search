@@ -38,6 +38,8 @@ class Solver:
         print(f"{word_from_path=}")
         if word_from_path == self.__word:
             return True
+        if not self.__word.startswith(word_from_path):
+            return False
         for cell in candidates:
             self.__path.append(cell)
             adj = self.__gen_candidates(cell)
